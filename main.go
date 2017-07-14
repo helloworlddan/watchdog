@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"strconv"
 )
 
 // Version of the watchdog utility
@@ -24,5 +23,5 @@ func main() {
 	} else {
 		caseSense = "case insensitive"
 	}
-	fmt.Println("Watchdog configured to watch '" + *directory + "' and look for " + caseSense + " file extension '" + *fileExtension + "' every " + strconv.Itoa(*interval) + " seconds to upload to '" + *uploadURL + "'.")
+	fmt.Printf("Watchdog configured to watch '%s' and look for %s file extension '%s' every %d seconds to upload to '%s'.\n", *directory, caseSense, *fileExtension, *interval, *uploadURL)
 }
