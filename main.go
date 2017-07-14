@@ -3,6 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 )
 
 // Version of the watchdog utility
@@ -24,4 +29,33 @@ func main() {
 		caseSense = "case insensitive"
 	}
 	fmt.Printf("Watchdog configured to watch '%s' and look for %s file extension '%s' every %d seconds to upload to '%s'.\n", *directory, caseSense, *fileExtension, *interval, *uploadURL)
+
+	uploadTargets := make(chan *os.File)
+	shutdown := make(chan os.Signal, 2)
+	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
+
+	sample, err := os.Create("sample_file.txt")
+	if err != nil {
+		log.Fatal("Failed to create sample file.")
+	}
+	uploadTargets <- sample
+
+	var wg sync.WaitGroup
+	for {
+		select {
+		case <-shutdown:
+			fmt.Println("Shutdown initiated.")
+			wg.Wait()
+			os.Exit(0)
+		case f := <-uploadTargets:
+			fmt.Println("Starting new upload.")
+			wg.Add(1)
+			go upload(f, *uploadURL, &wg)
+		}
+	}
+}
+
+func upload(f *os.File, uploadURL string, wg *sync.WaitGroup) {
+	fmt.Printf("Uploading %s to %s", *f, uploadURL)
+	wg.Done()
 }
