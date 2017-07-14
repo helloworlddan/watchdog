@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -58,13 +62,26 @@ func watch(uploadTargets chan<- string, directory string, caseSensitivity bool, 
 	for {
 		log.Println("Pushing new upload target.")
 		// TODO watch dir on this routine
-		uploadTargets <- "sample_file.txt"
+		uploadTargets <- "sample_file2.txt"
 		time.Sleep(time.Second * time.Duration(interval))
 	}
 }
 
 func upload(filename string, uploadURL string, wg *sync.WaitGroup) {
-	log.Printf("Uploading %s to %s\n", filename, uploadURL)
-	// TODO Open and upload file, close
-	wg.Done()
+	defer wg.Done()
+	contents, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Printf("Error: failed to open '%s'\n", filename)
+	}
+	parts := strings.Split(filename, ".")
+	url := strings.Replace(strings.Replace(uploadURL, "{extension}", parts[1], 1), "{filename}", parts[0], 1)
+	request, err := http.NewRequest("POST", url, bytes.NewBuffer(contents))
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		log.Printf("Error: failed to POST to '%s'\n", url)
+		return
+	}
+	defer response.Body.Close()
+	log.Printf("'%s' -> POST to '%s' %s\n", filename, url, response.Status)
 }
