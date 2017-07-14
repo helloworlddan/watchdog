@@ -32,7 +32,7 @@ func main() {
 	}
 	fmt.Printf("Watching '%s', lookng for %s file extension '%s' every %d seconds to upload to '%s'.\n", *directory, caseSense, *fileExtension, *interval, *uploadURL)
 
-	uploadTargets := make(chan *os.File, 100) // buffer 100 files
+	uploadTargets := make(chan string, 100) // buffer 100 files
 	shutdown := make(chan os.Signal, 2)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 
@@ -47,28 +47,24 @@ func main() {
 			log.Println("Shutdown initiated.")
 			wg.Wait()
 			os.Exit(0)
-		case f := <-uploadTargets:
+		case filename := <-uploadTargets:
 			wg.Add(1)
-			go upload(f, *uploadURL, &wg)
+			go upload(filename, *uploadURL, &wg)
 		}
 	}
 }
 
-func watch(uploadTargets chan<- *os.File, directory string, caseSensitivity bool, interval int) {
+func watch(uploadTargets chan<- string, directory string, caseSensitivity bool, interval int) {
 	for {
 		log.Println("Pushing new upload target.")
-		sample, err := os.Open("sample_file.txt")
-		if err != nil {
-			fmt.Printf("Failed to open file!\n")
-		}
-		uploadTargets <- sample
+		// TODO watch dir on this routine
+		uploadTargets <- "sample_file.txt"
 		time.Sleep(time.Second * time.Duration(interval))
 	}
 }
 
-func upload(f *os.File, uploadURL string, wg *sync.WaitGroup) {
-	log.Printf("Uploading %s to %s\n", f.Name(), uploadURL)
-	time.Sleep(time.Second * 30)
-	f.Close()
+func upload(filename string, uploadURL string, wg *sync.WaitGroup) {
+	log.Printf("Uploading %s to %s\n", filename, uploadURL)
+	// TODO Open and upload file, close
 	wg.Done()
 }
