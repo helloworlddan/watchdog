@@ -31,11 +31,11 @@ func main() {
 
 	var caseSense string
 	if *caseSensitivity {
-		caseSense = "case sensitive"
+		caseSense = "sensitive"
 	} else {
-		caseSense = "case insensitive"
+		caseSense = "insensitive"
 	}
-	fmt.Printf("Watching '%s', lookng for %s file extension '%s' every %d seconds to upload to '%s'.\n", *directory, caseSense, *fileExtension, *interval, *uploadURL)
+	fmt.Printf("Watching '%s', lookng for case %s file extension '%s' every %d seconds to upload to '%s'.\n", *directory, caseSense, *fileExtension, *interval, *uploadURL)
 
 	uploadTargets := make(chan string, 100) // buffer 100 files
 	shutdown := make(chan os.Signal, 2)
