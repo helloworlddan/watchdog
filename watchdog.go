@@ -27,6 +27,7 @@ func main() {
 	var caseSensitivity = flag.Bool("c", true, "Set case sensitivity.")
 	flag.Parse()
 
+	fmt.Println("🐶")
 	fmt.Println("Watchdog v" + Version)
 
 	var caseSense string
