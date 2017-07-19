@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"sync"
 	"syscall"
@@ -20,7 +21,7 @@ const Version string = "0.0.1"
 
 func main() {
 	var directory = flag.String("d", ".", "Directory to watch,")
-	var fileExtension = flag.String("e", "txt", "File extension to watch.")
+	var fileExtension = flag.String("e", ".txt", "File extension to watch.")
 	var interval = flag.Int("i", 60, "Watch interval in seconds.")
 	var uploadURL = flag.String("u", "http://localhost/{extension}/{filename}", "URL of the upload site to POST to.")
 	var caseSensitivity = flag.Bool("c", true, "Set case sensitivity.")
@@ -42,7 +43,7 @@ func main() {
 
 	fmt.Println("Hit Ctrl-C to initate shutdown.")
 
-	go watch(uploadTargets, *directory, *caseSensitivity, *interval)
+	go watch(uploadTargets, *directory, *fileExtension, *caseSensitivity, *interval)
 
 	var wg sync.WaitGroup
 	for {
@@ -53,23 +54,36 @@ func main() {
 			os.Exit(0)
 		case filename := <-uploadTargets:
 			wg.Add(1)
-			go upload(filename, *uploadURL, &wg)
+			go upload(*directory, filename, *uploadURL, &wg)
 		}
 	}
 }
 
-func watch(uploadTargets chan<- string, directory string, caseSensitivity bool, interval int) {
+func watch(uploadTargets chan<- string, directory string, fileExtension string, caseSensitivity bool, interval int) {
+	lastCheck := time.Now()
 	for {
-		log.Println("Pushing new upload target.")
-		// TODO watch dir on this routine
-		uploadTargets <- "sample_file2.txt"
+		files, _ := ioutil.ReadDir(directory)
+		for _, f := range files {
+			if filepath.Ext(f.Name()) != fileExtension {
+				continue
+			}
+			info, err := os.Stat(directory + string(os.PathSeparator) + f.Name())
+			if err != nil {
+				log.Printf("Error: failed to get file info on %s", f.Name())
+			}
+			if info.ModTime().After(lastCheck) {
+				log.Printf("Registering new upload target: %s", f.Name())
+				uploadTargets <- f.Name()
+			}
+		}
+		lastCheck = time.Now()
 		time.Sleep(time.Second * time.Duration(interval))
 	}
 }
 
-func upload(filename string, uploadURL string, wg *sync.WaitGroup) {
+func upload(directory string, filename string, uploadURL string, wg *sync.WaitGroup) {
 	defer wg.Done()
-	contents, err := ioutil.ReadFile(filename)
+	contents, err := ioutil.ReadFile(directory + string(os.PathSeparator) + filename)
 	if err != nil {
 		log.Printf("Error: failed to open '%s'\n", filename)
 	}
