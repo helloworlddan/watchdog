@@ -1,0 +1,13 @@
+language: go
+go:
+- master
+script:
+- go build
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: HpaSjcuZ9nR7W8WslY+PJqmXs2R8LFTt8DlwI42+vUhdrfqKfBw5zQJMiNACugvIGZfO34r4xAzG4OUuzYJKDeQ1ZHBp7ksf5eEGeS4bONoJUOtVMo3+IjzwWMJenJvfHK7lTL8pprA4n+O5t62A/YVlSZZcYvF+9oM4X4ZKjyunpPai8x+swc38RAIM45D0+mUscekNn9xP4+sUv39CThEZRHgmTrvshjuWIwJFovWVEU7FUaibZtjHkDtyu/2BX0xIXJVZ5wyziM9Dbg6j4fEVOm1zdWT4AVJvnRA4XKOUkAZN3+3k7P9cVtxeqbyxCm54IQ0RIap3yak5BSq2nniKci6eYZ2fLM9W2svDc8qM5fN7Xb6kZhr7egkcK/dJzgI56EE9gYC7b95haumcNbOfeG7C7XEnrwHGu9ekbPlUBTsN9o4413WaIqgzP3S0ESS8VgkeUCnQzF06gUPm0LCrkz6kNYocxfdGN5IPSP2ZBt8ZdNkdBV1sEZ+I0xhWR92uSv8EG7RIpUd9zI17k62GYsgVlkt+aoN/scpyMUnoZtu9nSTxyVVQwB+kttTeBIi6A5yQGpAV+bkaBxQ7WJ+ZZTyCvrsbDysH7YWb4PssGjs+LzZWAIsbItrdLY3Q2NImUobs8VK36zZ+gb8I3MxwJg4l9JWfhmDmhV4lfXc=
+  file: watchdog
+  on:
+    repo: planchao/watchdog
