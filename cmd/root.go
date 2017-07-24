@@ -7,6 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+}
+
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   "watchdog",
@@ -22,7 +25,4 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-}
-
-func init() {
 }
