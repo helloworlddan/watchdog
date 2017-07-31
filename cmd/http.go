@@ -42,7 +42,7 @@ var httpCmd = &cobra.Command{
 	Short: "Watch an URL and download to a filesystem directory",
 	Long: `NOTE: 
 	This command assumes that calling the url's base ('url' without {filename} & {extension}) will return some 
-	json listing of file info, including modification time (this is what we are watching).`,
+	json listing of file info, including modification time in RFC.3339 (this is what we are watching).`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("🐶")
 		log.Printf("watching '%s' looking for extension '%s' every %d seconds to download to '%s'.\n", downloadURL, downloadExtension, watchInterval, downloadDirectory)
