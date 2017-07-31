@@ -53,7 +53,7 @@ var fsCmd = &cobra.Command{
 
 		fmt.Println("hit Ctrl-C to initate shutdown.")
 
-		go watch(uploadTargets, directory, fileExtension, caseSensitivity, interval)
+		go watchFS(uploadTargets, directory, fileExtension, caseSensitivity, interval)
 
 		var wg sync.WaitGroup
 		for {
@@ -70,7 +70,7 @@ var fsCmd = &cobra.Command{
 	},
 }
 
-func watch(uploadTargets chan<- string, directory string, fileExtension string, caseSensitivity bool, interval int) {
+func watchFS(uploadTargets chan<- string, directory string, fileExtension string, caseSensitivity bool, interval int) {
 	lastCheck := time.Now()
 	for {
 		files, _ := ioutil.ReadDir(directory)

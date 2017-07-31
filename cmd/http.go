@@ -40,7 +40,8 @@ func init() {
 var httpCmd = &cobra.Command{
 	Use:   "http",
 	Short: "Watch an URL and download to a filesystem directory",
-	Long: `NOTE: 
+	Long: `Watch an HTTP endpoint listing for a specific timestamp and download it to local filesystem if time is younger than previous iteration.
+	NOTE: 
 	This command assumes that calling the url's base ('url' without {filename} & {extension}) will return some 
 	json listing of file info, including modification time in RFC.3339 (this is what we are watching).`,
 	Run: func(cmd *cobra.Command, args []string) {
