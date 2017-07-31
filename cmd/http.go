@@ -72,8 +72,9 @@ var httpCmd = &cobra.Command{
 
 func watchHTTP(downloadTargets chan<- string, url, extension string, interval int) {
 	lastCheck := time.Now()
+	ext := strings.Replace(extension, ".", "", 1)
 	for {
-		baseURL := strings.Replace(strings.Replace(url, "/{filename}", "", -1), "/{extension}", "", -1)
+		baseURL := strings.Replace(strings.Replace(url, "/{filename}", "", -1), "{extension}", ext, -1)
 		req, err := http.NewRequest("GET", baseURL, nil)
 		if err != nil {
 			log.Printf("failed to create request for %s : %v \n", baseURL, err)
@@ -143,5 +144,5 @@ func download(baseURL, directory, filename string, wg *sync.WaitGroup) {
 		log.Printf("failed to copy data for %s : %v \n", url, err)
 		return
 	}
-	log.Printf("saved %s to %s, written %d bytes.", url, directory, length)
+	log.Printf("saved %s to '%s', written %d bytes.", url, directory, length)
 }
