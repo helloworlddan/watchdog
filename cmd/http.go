@@ -85,6 +85,7 @@ func watchHTTP(downloadTargets chan<- string, url, extension string, interval in
 		resp, err := client.Do(req)
 		if err != nil {
 			log.Printf("failed to read response for %s : %v \n", baseURL, err)
+			time.Sleep(time.Second * time.Duration(interval))
 			continue
 		}
 		defer resp.Body.Close()
@@ -103,7 +104,7 @@ func watchHTTP(downloadTargets chan<- string, url, extension string, interval in
 
 		for _, obj := range objects {
 			if obj.WriteTime.After(lastCheck) {
-				log.Printf("queueing download %s.%s from %s \n", obj.Name, obj.Fext, url)
+				log.Printf("registering new download target %s.%s \n", obj.Name, obj.Fext)
 				downloadTargets <- fmt.Sprintf("%s.%s", obj.Name, obj.Fext)
 			}
 		}
@@ -133,7 +134,8 @@ func download(baseURL, directory, filename string, wg *sync.WaitGroup) {
 	}
 	defer resp.Body.Close()
 
-	target, err := os.Create(directory + string(os.PathSeparator) + filename)
+	targetPath := directory + string(os.PathSeparator) + filename
+	target, err := os.Create(targetPath)
 	if err != nil {
 		log.Printf("failed to open target file %s : %v \n", url, err)
 		return
@@ -145,5 +147,5 @@ func download(baseURL, directory, filename string, wg *sync.WaitGroup) {
 		log.Printf("failed to copy data for %s : %v \n", url, err)
 		return
 	}
-	log.Printf("saved %s to '%s', written %d bytes.", url, directory, length)
+	log.Printf("GET %s -> '%s' %s, %d bytes written\n", url, filename, resp.Status, length)
 }

@@ -14,6 +14,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/djherbis/times"
 	"github.com/spf13/cobra"
 )
 
@@ -78,12 +79,12 @@ func watchFS(uploadTargets chan<- string, directory string, fileExtension string
 			if filepath.Ext(f.Name()) != fileExtension {
 				continue
 			}
-			info, err := os.Stat(directory + string(os.PathSeparator) + f.Name())
+			info, err := times.Stat(directory + string(os.PathSeparator) + f.Name())
 			if err != nil {
 				log.Printf("failed to get file info on %s", f.Name())
 				continue
 			}
-			if info.ModTime().After(lastCheck) {
+			if info.ModTime().After(lastCheck) || (info.HasChangeTime() && info.ChangeTime().After(lastCheck)) || (info.HasBirthTime() && info.BirthTime().After(lastCheck)) {
 				log.Printf("registering new upload target: %s", f.Name())
 				uploadTargets <- f.Name()
 			}
@@ -109,5 +110,5 @@ func upload(directory string, filename string, uploadURL string, wg *sync.WaitGr
 		return
 	}
 	defer response.Body.Close()
-	log.Printf("'%s' -> POST to '%s' %s\n", filename, url, response.Status)
+	log.Printf("'%s' -> POST '%s' %s\n", filename, url, response.Status)
 }
