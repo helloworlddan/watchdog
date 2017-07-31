@@ -45,13 +45,13 @@ var fsCmd = &cobra.Command{
 		} else {
 			caseSense = "insensitive"
 		}
-		fmt.Printf("Watching '%s', lookng for case %s file extension '%s' every %d seconds to upload to '%s'.\n", directory, caseSense, fileExtension, interval, uploadURL)
+		log.Printf("watching '%s', looking for case %s file extension '%s' every %d seconds to upload to '%s'.\n", directory, caseSense, fileExtension, interval, uploadURL)
 
 		uploadTargets := make(chan string, 100) // buffer 100 files
 		shutdown := make(chan os.Signal, 2)
 		signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 
-		fmt.Println("Hit Ctrl-C to initate shutdown.")
+		fmt.Println("hit Ctrl-C to initate shutdown.")
 
 		go watch(uploadTargets, directory, fileExtension, caseSensitivity, interval)
 
@@ -59,7 +59,7 @@ var fsCmd = &cobra.Command{
 		for {
 			select {
 			case <-shutdown:
-				log.Println("Shutdown initiated.")
+				log.Println("shutdown initiated.")
 				wg.Wait()
 				os.Exit(0)
 			case filename := <-uploadTargets:
@@ -80,10 +80,11 @@ func watch(uploadTargets chan<- string, directory string, fileExtension string, 
 			}
 			info, err := os.Stat(directory + string(os.PathSeparator) + f.Name())
 			if err != nil {
-				log.Printf("Error: failed to get file info on %s", f.Name())
+				log.Printf("failed to get file info on %s", f.Name())
+				continue
 			}
 			if info.ModTime().After(lastCheck) {
-				log.Printf("Registering new upload target: %s", f.Name())
+				log.Printf("registering new upload target: %s", f.Name())
 				uploadTargets <- f.Name()
 			}
 		}
@@ -96,7 +97,7 @@ func upload(directory string, filename string, uploadURL string, wg *sync.WaitGr
 	defer wg.Done()
 	contents, err := ioutil.ReadFile(directory + string(os.PathSeparator) + filename)
 	if err != nil {
-		log.Printf("Error: failed to open '%s'\n", filename)
+		log.Printf("failed to open '%s'\n", filename)
 	}
 	parts := strings.Split(filename, ".")
 	url := strings.Replace(strings.Replace(uploadURL, "{extension}", parts[1], 1), "{filename}", parts[0], 1)
@@ -104,7 +105,7 @@ func upload(directory string, filename string, uploadURL string, wg *sync.WaitGr
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
-		log.Printf("Error: failed to POST to '%s'\n", url)
+		log.Printf("failed to POST to '%s'\n", url)
 		return
 	}
 	defer response.Body.Close()
