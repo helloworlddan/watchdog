@@ -21,7 +21,7 @@ import (
 var (
 	directory, fileExtension, uploadURL string
 	caseSensitivity                     bool
-	interval                            int
+	interval, collect                   int
 )
 
 func init() {
@@ -30,6 +30,7 @@ func init() {
 	fsCmd.Flags().StringVarP(&fileExtension, "extension", "e", ".txt", "Extension to watch.")
 	fsCmd.Flags().IntVarP(&interval, "interval", "i", 60, "Watch interval in seconds.")
 	fsCmd.Flags().StringVarP(&uploadURL, "upload", "u", "http://localhost/{extension}/{filename}", "URL of the upload site to POST to.")
+	fsCmd.Flags().IntVarP(&collect, "collect", "c", 0, "Number of files to concatenate into one bigger upload.")
 	fsCmd.Flags().BoolVarP(&caseSensitivity, "case-sensitivity", "c", true, "Set case sensitivity.")
 }
 
